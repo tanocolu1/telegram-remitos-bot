@@ -4,7 +4,7 @@ import requests
 import datetime
 import pytz
 from fastapi import FastAPI, Request, HTTPException
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaInMemoryUpload
 
@@ -17,8 +17,11 @@ SCOPES = [
 ]
 
 def google_clients():
-    sa_info = json.loads(os.environ["GOOGLE_SA_JSON"])
-    creds = service_account.Credentials.from_service_account_info(sa_info, scopes=SCOPES)
+    # Cargamos el JSON con tus credenciales de usuario
+    token_info = json.loads(os.environ["GOOGLE_SA_JSON"])
+    # Usamos from_authorized_user_info en lugar de service_account
+    creds = Credentials.from_authorized_user_info(token_info, scopes=SCOPES)
+    
     drive = build("drive", "v3", credentials=creds)
     sheets = build("sheets", "v4", credentials=creds)
     return drive, sheets
