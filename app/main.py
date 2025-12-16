@@ -104,13 +104,27 @@ async def telegram_webhook(request: Request):
     filename = f"remito_{now.strftime('%Y%m%d_%H%M%S')}_{chat_id}.{ext}"
     drive_link = drive_upload(drive, content, content_type, filename)
 
+    # LOGICA NUEVA PARA SEPARAR DATOS
+    # Esperamos que el usuario escriba: "Proveedor - Monto - Detalle"
+    # Si solo escribe una cosa, todo irá a Proveedor.
+    
+    partes = caption.split("-") # Separamos por el guión
+    partes = [p.strip() for p in partes] # Quitamos espacios sobrantes
+
+    # Asignamos variables segun la cantidad de partes que encontró
+    proveedor = partes[0] if len(partes) > 0 else ""
+    detalle = partes[1] if len(partes) > 1 else ""
+    
+
+    # Armamos la fila para Google Sheets
+    # Asegúrate que el orden coincida con tus columnas en Sheets!
     row = [
-        drive_link,
-        now.strftime("%Y-%m-%d %H:%M"),
-        proveedor,
-        False,
-        "",
+        drive_link,                      # Columna A
+        now.strftime("%Y-%m-%d %H:%M"),  # Columna B
+        proveedor,                       # Columna C
+        detalle,                         # Columna D
     ]
+    
     sheets_append_row(sheets, row)
 
     return {"ok": True}
